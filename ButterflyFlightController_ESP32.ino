@@ -10,35 +10,35 @@
  * - Flap Enable channel controls on/off (enable/disable flapping)
  * 
  * Hardware Requirements:
- * - ESP32 board (any variant)
+ * - Waveshare ESP32-C3 Mini Development Board
  * - FrSky 4XR receiver with S.bus output
- * - NO INVERTER NEEDED! ESP32 handles inversion in hardware
+ * - NO INVERTER NEEDED! ESP32-C3 handles inversion in hardware
  * - Two servos for wing control
  * 
  * Wiring:
- * - S.bus output from receiver (DIRECT, no inverter!) -> GPIO 16 (or any pin)
- * - Servo 1 (Left wing) -> GPIO 18 (or any PWM pin)
- * - Servo 2 (Right wing) -> GPIO 19 (or any PWM pin)
+ * - S.bus output from receiver (DIRECT, no inverter!) -> GPIO 4 (UART1 RX)
+ * - Servo 1 (Left wing) -> GPIO 5 (or any PWM pin)
+ * - Servo 2 (Right wing) -> GPIO 6 (or any PWM pin)
  * 
  * Channel Mapping (default):
  * - Channel 1: Throttle (flap rate)
  * - Channel 2: Aileron (turning)
  * - Channel 3: Flap Enable (on/off switch)
  * 
- * NOTE: ESP32 has hardware support for inverted UART signals,
+ * NOTE: ESP32-C3 has hardware support for inverted UART signals,
  * eliminating the need for a hardware inverter!
  */
 
 #include "FrskySbus.h"
 #include <ESP32Servo.h>
 
-// Hardware configuration
-#define SBUS_RX_PIN 16  // ESP32 GPIO pin for S.bus RX
-#define SERVO_LEFT_PIN 18
-#define SERVO_RIGHT_PIN 19
+// Hardware configuration (Waveshare ESP32-C3 Mini)
+#define SBUS_RX_PIN 4   // GPIO 4 for S.bus RX (UART1 on ESP32-C3)
+#define SERVO_LEFT_PIN 5
+#define SERVO_RIGHT_PIN 6
 
-// ESP32 HardwareSerial with inverted signal support
-HardwareSerial sbusSerial(2); // Use UART2 on ESP32
+// ESP32-C3 HardwareSerial with inverted signal support
+HardwareSerial sbusSerial(1); // Use UART1 on ESP32-C3
 FrskySbus frsky_(sbusSerial);
 
 // Servo objects
@@ -91,19 +91,19 @@ void setup() {
   while (!Serial && millis() < 3000) {
     ; // Wait for serial port or timeout after 3 seconds
   }
-  Serial.println("RC Butterfly Flight Controller (ESP32 - No Inverter!)");
+  Serial.println("RC Butterfly Flight Controller (ESP32-C3 Mini - No Inverter!)");
   Serial.println("Initializing...");
 
-  // Initialize ESP32 UART with inverted signal support
-  // ESP32 can invert the signal in hardware - no external inverter needed!
+  // Initialize ESP32-C3 UART with inverted signal support
+  // ESP32-C3 can invert the signal in hardware - no external inverter needed!
   sbusSerial.begin(100000, SERIAL_8E2, SBUS_RX_PIN, -1, true); // baud, config, RX, TX, invert
-  // Note: The 'invert' parameter (true) tells ESP32 to invert the signal in hardware
+  // Note: The 'invert' parameter (true) tells ESP32-C3 to invert the signal in hardware
   
   // Clear buffer
   while (sbusSerial.available() > 0) {
     sbusSerial.read();
   }
-  Serial.println("S.bus initialized (ESP32 hardware inversion)");
+  Serial.println("S.bus initialized (ESP32-C3 hardware inversion)");
 
   // Attach servos
   servoLeft.attach(SERVO_LEFT_PIN);

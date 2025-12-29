@@ -14,10 +14,10 @@ A flight controller for an RC butterfly that uses an ESP32 to control two wing s
 ## Hardware Requirements
 
 ### Required Components
-- **ESP32 board** (any variant - ESP32, ESP32-S2, ESP32-C3, etc.)
+- **Waveshare ESP32-C3 Mini Development Board**
 - **FrSky 4XR 3/16 channel receiver** with S.bus output
 - **Two standard servos** (9g or similar) for wing control
-- Power supply for servos (if not powered through ESP32)
+- Power supply for servos (if not powered through ESP32-C3)
 
 ### Optional Components
 - USB cable for programming and debugging
@@ -30,23 +30,23 @@ FrSky 4XR Receiver
     |
     | S.bus OUT (direct connection, no inverter!)
     |
-ESP32 GPIO 16 (UART2 RX)
+ESP32-C3 Mini GPIO 4 (UART1 RX)
     |
     | Control signals
     |
-Servo 1 (Left Wing)  -> GPIO 18
-Servo 2 (Right Wing) -> GPIO 19
+Servo 1 (Left Wing)  -> GPIO 5
+Servo 2 (Right Wing) -> GPIO 6
 ```
 
-### Pin Connections
+### Pin Connections (Waveshare ESP32-C3 Mini)
 
-| Component | ESP32 Pin | Notes |
-|-----------|-----------|-------|
-| S.bus Signal | GPIO 16 | UART2 RX (configurable) |
-| Left Wing Servo | GPIO 18 | PWM pin (configurable) |
-| Right Wing Servo | GPIO 19 | PWM pin (configurable) |
+| Component | ESP32-C3 Pin | Notes |
+|-----------|--------------|-------|
+| S.bus Signal | GPIO 4 | UART1 RX |
+| Left Wing Servo | GPIO 5 | PWM pin |
+| Right Wing Servo | GPIO 6 | PWM pin |
 
-**Note**: ESP32 pins are configurable. You can change `SBUS_RX_PIN`, `SERVO_LEFT_PIN`, and `SERVO_RIGHT_PIN` in the code to use different GPIO pins.
+**Note**: Pins are configurable. You can change `SBUS_RX_PIN`, `SERVO_LEFT_PIN`, and `SERVO_RIGHT_PIN` in the code to use different GPIO pins if needed.
 
 ## Software Setup
 
@@ -65,13 +65,13 @@ Servo 2 (Right Wing) -> GPIO 19
 
 1. In Arduino IDE: File → Preferences → Additional Board Manager URLs
 2. Add: `https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json`
-3. Tools → Board → Boards Manager → Search "ESP32" → Install
+3. Tools → Board → Boards Manager → Search "ESP32" → Install "esp32 by Espressif Systems"
 
 ### 3. Upload the Code
 
 1. Open `ButterflyFlightController_ESP32.ino` in Arduino IDE
-2. Select your ESP32 board: Tools → Board → ESP32 Arduino → [Your ESP32 variant]
-3. Select the correct port: Tools → Port → [Your ESP32 port]
+2. Select your board: Tools → Board → ESP32 Arduino → ESP32C3 Dev Module
+3. Select the correct port: Tools → Port → [Your ESP32-C3 port]
 4. Upload the sketch
 
 ## How It Works
@@ -182,13 +182,15 @@ The code includes Serial output for debugging. Open Serial Monitor at 115200 bau
 
 To disable debug output for production, comment out or remove the Serial.print statements in the loop.
 
-## Why ESP32?
+## Why ESP32-C3 Mini?
 
-The ESP32 is ideal for this project because:
+The Waveshare ESP32-C3 Mini is ideal for this project because:
 - **Hardware UART**: Dedicated hardware serial (not software emulation)
 - **Native Inverted Signal Support**: Handles inverted S.bus signals in hardware - no inverter circuit needed!
 - **Reliable at 100000 Baud**: Handles S.bus speed easily without jitter
 - **Better Performance**: Smooth, responsive control
+- **Compact Size**: Small form factor perfect for RC applications
+- **Low Power**: Efficient operation for battery-powered projects
 
 ## Safety Notes
 
