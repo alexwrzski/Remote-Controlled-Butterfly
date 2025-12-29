@@ -61,8 +61,8 @@ const unsigned long MAX_FLAP_PERIOD = 500;  // Maximum time between flaps (ms) -
 const int FLAP_AMPLITUDE_FULL = 45;        // Full flap amplitude (degrees) - both wings when straight
 const int FLAP_AMPLITUDE_MIN = 22;         // Minimum flap amplitude when turning (degrees)
 const int SERVO_CENTER = 90;               // Center position for servos (degrees)
-const int SERVO_MIN = 45;                  // Minimum servo position (degrees)
-const int SERVO_MAX = 135;                 // Maximum servo position (degrees)
+const int SERVO_MIN = 30;                  // Minimum servo position (degrees) - increased range for turning
+const int SERVO_MAX = 150;                 // Maximum servo position (degrees) - increased range for turning
 
 // Turn control parameters
 const int MAX_TURN_REDUCTION = 23;  // Maximum reduction in flap amplitude for turning (degrees)
@@ -146,23 +146,23 @@ void loop() {
         flapPeriod = constrain(flapPeriod, MIN_FLAP_PERIOD, MAX_FLAP_PERIOD);
 
         // Map aileron to turn reduction
-        // Negative aileron (left) = reduce left wing amplitude
-        // Positive aileron (right) = reduce right wing amplitude
+        // Negative aileron (left) = reduce left wing, increase right wing
+        // Positive aileron (right) = reduce right wing, increase left wing
         int aileronValue = map(aileron, SBUS_MIN, SBUS_MAX, -100, 100);  // -100 to +100
         
-        // Calculate amplitude reduction for each wing
-        // Left turn (negative aileron): reduce left wing amplitude
-        // Right turn (positive aileron): reduce right wing amplitude
+        // Calculate amplitude changes for each wing
+        // When turning, decrease amplitude on one side and increase on the other
+        // This creates more asymmetric lift for better turning
         if (aileronValue < 0) {
-          // Turning left - reduce left wing amplitude
+          // Turning left - reduce left wing amplitude, increase right wing amplitude
           int reduction = map(abs(aileronValue), 0, 100, 0, MAX_TURN_REDUCTION);
           leftWingAmplitude = FLAP_AMPLITUDE_FULL - reduction;
-          rightWingAmplitude = FLAP_AMPLITUDE_FULL;  // Right wing keeps full amplitude
+          rightWingAmplitude = FLAP_AMPLITUDE_FULL + reduction;  // Increase opposite side
         } else if (aileronValue > 0) {
-          // Turning right - reduce right wing amplitude
+          // Turning right - reduce right wing amplitude, increase left wing amplitude
           int reduction = map(aileronValue, 0, 100, 0, MAX_TURN_REDUCTION);
           rightWingAmplitude = FLAP_AMPLITUDE_FULL - reduction;
-          leftWingAmplitude = FLAP_AMPLITUDE_FULL;  // Left wing keeps full amplitude
+          leftWingAmplitude = FLAP_AMPLITUDE_FULL + reduction;  // Increase opposite side
         } else {
           // Flying straight - both wings full amplitude
           leftWingAmplitude = FLAP_AMPLITUDE_FULL;
@@ -170,8 +170,10 @@ void loop() {
         }
         
         // Constrain amplitudes to safe range
-        leftWingAmplitude = constrain(leftWingAmplitude, FLAP_AMPLITUDE_MIN, FLAP_AMPLITUDE_FULL);
-        rightWingAmplitude = constrain(rightWingAmplitude, FLAP_AMPLITUDE_MIN, FLAP_AMPLITUDE_FULL);
+        // Allow increased amplitude up to 1.5x full amplitude for better turning
+        int maxAmplitude = FLAP_AMPLITUDE_FULL + MAX_TURN_REDUCTION;
+        leftWingAmplitude = constrain(leftWingAmplitude, FLAP_AMPLITUDE_MIN, maxAmplitude);
+        rightWingAmplitude = constrain(rightWingAmplitude, FLAP_AMPLITUDE_MIN, maxAmplitude);
       } else {
         // Flapping disabled - ignore all inputs and return to neutral
         leftWingAmplitude = FLAP_AMPLITUDE_FULL;
